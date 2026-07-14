@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Tracker | reLink Medical</title>
+<meta name="description" content="Track tasks, owners, status and deadlines in one board.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="title-block">
+      <div class="brandmark">
+        <span class="brandmark-re">re</span><span class="brandmark-link">Link</span>
+        <span class="brandmark-div"></span>
+        <span class="brandmark-unit">Medical</span>
+      </div>
+      <h1>Project Tracker</h1>
+      <p>Track tasks, owners, status and deadlines in one board.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-sm" id="btn-csv">Export CSV</button>
+      <button class="btn btn-sm" id="btn-save">Save file</button>
+      <button class="btn btn-sm" id="btn-load">Load file</button>
+      <input id="importer" type="file" accept="application/json" hidden>
+      <button class="btn btn-primary" id="btn-add">+ Add task</button>
+    </div>
+  </header>
+
+  <section class="board" id="board" aria-label="Summary"></section>
+
+  <div class="toolbar">
+    <div class="filters" id="filters" role="group" aria-label="Filter by status"></div>
+    <label class="sort-wrap">
+      <span class="sr-only">Sort tasks</span>
+      <select class="sortsel" id="sort">
+        <option value="deadline">Sort: Deadline</option>
+        <option value="priority">Sort: Priority</option>
+        <option value="status">Sort: Status</option>
+        <option value="name">Sort: Name</option>
+        <option value="pct">Sort: % Complete</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="table-shell">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th>Task</th>
+          <th>Owner</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Deadline</th>
+          <th>Days left</th>
+          <th>Progress</th>
+          <th><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <p class="hint">Changes save automatically in this browser. Use <strong>Save file</strong> to keep a backup or move your board to another device.</p>
+</div>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modal-title">Add task</h2>
+      <button class="close-x" id="btn-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field full">
+        <label for="f-task">Task / project</label>
+        <input id="f-task" type="text" placeholder="e.g. Q3 imaging asset pickup">
+      </div>
+      <div class="field">
+        <label for="f-owner">Owner</label>
+        <input id="f-owner" type="text" placeholder="e.g. Joe">
+      </div>
+      <div class="field">
+        <label for="f-status">Status</label>
+        <select id="f-status">
+          <option>Not Started</option><option>In Progress</option>
+          <option>Blocked</option><option>Complete</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-priority">Priority</label>
+        <select id="f-priority">
+          <option>High</option><option selected>Medium</option><option>Low</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-pct">% Complete</label>
+        <input id="f-pct" type="number" min="0" max="100" step="5" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="f-start">Start date</label>
+        <input id="f-start" type="date">
+      </div>
+      <div class="field">
+        <label for="f-deadline">Deadline</label>
+        <input id="f-deadline" type="date">
+      </div>
+      <div class="field full">
+        <label for="f-notes">Notes</label>
+        <textarea id="f-notes" placeholder="Context, links, blockers…"></textarea>
+      </div>
+      <p class="form-error full" id="form-error" hidden></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="btn-cancel">Cancel</button>
+      <button class="btn btn-primary" id="btn-savetask">Save task</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
