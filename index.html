@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=3">
+<link rel="stylesheet" href="css/styles.css?v=4">
 </head>
 <body>
 <div class="wrap">
@@ -16,9 +16,13 @@
   <header>
     <div class="title-block">
       <div class="brandmark">
-        <span class="brandmark-re">re</span><span class="brandmark-link">Link</span>
-        <span class="brandmark-div"></span>
-        <span class="brandmark-unit">Medical</span>
+        <img src="img/relink-logo.png" alt="reLink Medical" class="brand-logo"
+             onerror="this.style.display='none';document.getElementById('brand-fallback').style.display='inline-flex';">
+        <span class="brand-fallback" id="brand-fallback">
+          <span class="brandmark-re">re</span><span class="brandmark-link">Link</span>
+          <span class="brandmark-div"></span>
+          <span class="brandmark-unit">Medical</span>
+        </span>
       </div>
       <h1>Project <span class="h1-accent">Tracker</span></h1>
       <p>Track tasks, owners, status and deadlines in one board.</p>
@@ -35,7 +39,10 @@
   <section class="board" id="board" aria-label="Summary"></section>
 
   <div class="toolbar">
-    <div class="filters" id="filters" role="group" aria-label="Filter by status"></div>
+    <div class="toolbar-left">
+      <input id="search" class="searchbox" type="search" placeholder="Search tasks, owners, notes…" aria-label="Search tasks">
+      <div class="filters" id="filters" role="group" aria-label="Filter by status"></div>
+    </div>
     <label class="sort-wrap">
       <span class="sr-only">Sort tasks</span>
       <select class="sortsel" id="sort">
@@ -132,6 +139,6 @@
   </div>
 </div>
 
-<script src="js/app.js?v=3"></script>
+<script src="js/app.js?v=4"></script>
 </body>
 </html>
