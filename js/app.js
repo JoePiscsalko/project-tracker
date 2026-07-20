@@ -19,6 +19,7 @@
 
   let tasks = [];
   let activeFilter = 'All';
+  let searchQuery = '';
   let editingId = null;
 
   const $ = (id) => document.getElementById(id);
@@ -119,6 +120,12 @@
     const sort = $('sort').value;
     const rows = tasks
       .filter((t) => activeFilter === 'All' || t.status === activeFilter)
+      .filter((t) => {
+        if (!searchQuery) return true;
+        const hay = [t.task, t.owner, t.notes, ...(t.comments || []).map((c) => c.text)]
+          .join(' ').toLowerCase();
+        return hay.includes(searchQuery);
+      })
       .sort((a, b) => {
         if (sort === 'deadline') return (a.deadline || '9999-99-99') < (b.deadline || '9999-99-99') ? -1 : 1;
         if (sort === 'priority') return PORDER[a.priority] - PORDER[b.priority];
@@ -133,7 +140,7 @@
     if (!rows.length) {
       tb.innerHTML =
         '<tr><td colspan="10"><div class="empty"><b>No tasks here</b>' +
-        (tasks.length ? 'Try a different filter.' : 'Add your first task to get started.') +
+        (tasks.length ? 'Nothing matches your search or filter.' : 'Add your first task to get started.') +
         '</div></td></tr>';
       return;
     }
@@ -381,6 +388,7 @@
   $('btn-load').addEventListener('click', () => $('importer').click());
   $('importer').addEventListener('change', importJSON);
   $('sort').addEventListener('change', render);
+  $('search').addEventListener('input', (e) => { searchQuery = e.target.value.trim().toLowerCase(); render(); });
 
   // Ctrl/Cmd+Enter posts a comment
   $('cmt-input').addEventListener('keydown', (e) => {
