@@ -167,10 +167,11 @@ tbody tr:hover{background:#FCFAF6}
 .d-over{color:var(--bl);background:var(--bl-bg)}
 .d-done{color:var(--cp);background:var(--cp-bg)}
 
-.pct-cell{min-width:130px;display:flex;align-items:center;gap:9px}
+.pct-cell{min-width:130px}
+.pct-wrap{display:flex;align-items:center;gap:9px}
 .pct-track{flex:1;height:6px;background:var(--line);border-radius:99px;overflow:hidden}
 .pct-bar{height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
-.pct-label{font-size:10.5px;color:var(--ink-soft);font-weight:600;font-variant-numeric:tabular-nums;flex:none;min-width:30px;text-align:right}
+.pct-label{font-size:11px;color:var(--ink-soft);font-weight:600;font-variant-numeric:tabular-nums;flex:none;min-width:32px;text-align:right}
 
 .row-actions{display:flex;gap:4px;white-space:nowrap}
 .icon-btn{background:transparent;border:1px solid transparent;color:var(--ink-soft);padding:4px 10px;border-radius:var(--pill);font-size:12px;font-weight:600}
