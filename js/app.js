@@ -178,8 +178,10 @@
         <td class="mono">${fmtDate(t.deadline)}</td>
         <td><span class="days ${dCls}">${dTxt}</span></td>
         <td class="pct-cell">
-          <div class="pct-track"><div class="pct-bar" style="width:${t.pct}%"></div></div>
-          <div class="pct-label">${t.pct}%</div>
+          <div class="pct-wrap">
+            <div class="pct-track"><div class="pct-bar" style="width:${t.pct}%"></div></div>
+            <span class="pct-label">${t.pct}%</span>
+          </div>
         </td>
         <td class="comments-cell">
           <button class="cmt-open" data-act="comments" data-id="${t.id}" aria-label="Comments for ${esc(t.task)}">
