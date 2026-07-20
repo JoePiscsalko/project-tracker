@@ -76,6 +76,8 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
   font-size:10.5px;font-weight:700;
   text-transform:uppercase;letter-spacing:.16em;color:var(--brand-teal);
 }
+.brand-logo{height:36px;width:auto;display:block}
+.brand-fallback{display:none;align-items:center;gap:9px}
 
 .title-block h1{
   font-family:var(--font-display);font-weight:400;font-size:44px;
@@ -108,6 +110,13 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:var(--pill);
 
 /* ---------- Toolbar ---------- */
 .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar-left{display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex:1;min-width:0}
+.searchbox{
+  font-family:inherit;font-size:13px;font-weight:500;padding:8px 15px;min-width:240px;
+  border:1px solid var(--line-strong);border-radius:var(--pill);background:var(--panel);color:var(--ink);
+}
+.searchbox::placeholder{color:var(--ink-soft)}
+.searchbox:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
 .filters{display:flex;gap:6px;flex-wrap:wrap}
 .chip{padding:6px 14px;border-radius:var(--pill);background:var(--panel);border:1px solid var(--line-strong);font-size:12.5px;font-weight:600;color:var(--ink-soft)}
 .chip:hover{border-color:var(--ink-soft);color:var(--ink)}
@@ -120,10 +129,10 @@ button{font-family:inherit;cursor:pointer;border:none;border-radius:var(--pill);
 table{width:100%;border-collapse:collapse;min-width:1040px}
 thead th{
   font-size:10px;text-transform:uppercase;letter-spacing:.1em;
-  color:var(--ink-soft);font-weight:700;text-align:left;padding:13px 14px;
+  color:var(--ink-soft);font-weight:700;text-align:left;padding:9px 14px;
   border-bottom:1px solid var(--line);white-space:nowrap;background:#FBF8F3;
 }
-tbody td{padding:12px 14px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+tbody td{padding:7px 14px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:middle}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover{background:#FCFAF6}
 .task-name{font-weight:700;color:var(--ink)}
@@ -158,10 +167,10 @@ tbody tr:hover{background:#FCFAF6}
 .d-over{color:var(--bl);background:var(--bl-bg)}
 .d-done{color:var(--cp);background:var(--cp-bg)}
 
-.pct-cell{min-width:120px}
-.pct-track{height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.pct-cell{min-width:130px;display:flex;align-items:center;gap:9px}
+.pct-track{flex:1;height:6px;background:var(--line);border-radius:99px;overflow:hidden}
 .pct-bar{height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
-.pct-label{font-size:10.5px;color:var(--ink-soft);margin-top:4px;font-weight:600;font-variant-numeric:tabular-nums}
+.pct-label{font-size:10.5px;color:var(--ink-soft);font-weight:600;font-variant-numeric:tabular-nums;flex:none;min-width:30px;text-align:right}
 
 .row-actions{display:flex;gap:4px;white-space:nowrap}
 .icon-btn{background:transparent;border:1px solid transparent;color:var(--ink-soft);padding:4px 10px;border-radius:var(--pill);font-size:12px;font-weight:600}
@@ -170,10 +179,10 @@ tbody tr:hover{background:#FCFAF6}
 
 /* ---------- Comments ---------- */
 .comments-cell{min-width:220px;max-width:290px}
-.cmt-open{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:10px;padding:6px 9px;font-weight:600;color:var(--ink)}
+.cmt-open{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:10px;padding:4px 9px;font-weight:600;color:var(--ink)}
 .cmt-open:hover{background:var(--canvas);border-color:var(--line)}
 .cmt-count{flex:none;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--brand-teal);color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
-.cmt-preview{font-size:12px;font-weight:500;line-height:1.35;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cmt-preview{font-size:12px;font-weight:500;line-height:1.4;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cmt-preview.empty{color:var(--ink-soft);font-style:italic}
 
 .cmt-section .cmt-thread{
