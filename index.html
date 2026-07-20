@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=2">
+<link rel="stylesheet" href="css/styles.css?v=3">
 </head>
 <body>
 <div class="wrap">
@@ -60,6 +60,7 @@
           <th>Deadline</th>
           <th>Days left</th>
           <th>Progress</th>
+          <th>Comments</th>
           <th><span class="sr-only">Actions</span></th>
         </tr>
       </thead>
@@ -114,6 +115,14 @@
         <label for="f-notes">Notes</label>
         <textarea id="f-notes" placeholder="Context, links, blockers…"></textarea>
       </div>
+      <div class="field full cmt-section" id="cmt-section" hidden>
+        <label>Comments</label>
+        <div class="cmt-thread" id="cmt-thread"></div>
+        <div class="cmt-add">
+          <textarea id="cmt-input" placeholder="Add a comment… (Ctrl+Enter to post)"></textarea>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-addcmt">Add comment</button>
+        </div>
+      </div>
       <p class="form-error full" id="form-error" hidden></p>
     </div>
     <div class="modal-foot">
@@ -123,6 +132,6 @@
   </div>
 </div>
 
-<script src="js/app.js?v=2"></script>
+<script src="js/app.js?v=3"></script>
 </body>
 </html>
