@@ -4,10 +4,17 @@
 (function () {
   'use strict';
 
-  const KEY = 'relink_project_tracker_v1';
-  const STATUSES = ['Not Started', 'In Progress', 'Blocked', 'Complete'];
-  const SCLASS = { 'Not Started': 's-ns', 'In Progress': 's-ip', 'Blocked': 's-bl', 'Complete': 's-cp' };
-  const SORDER = { 'Not Started': 0, 'In Progress': 1, 'Blocked': 2, 'Complete': 3 };
+  const KEY = 'relink_project_tracker_v1';       // localStorage cache key
+  const AUTHOR_KEY = 'relink_tracker_author';     // this person's display name for comments
+  const STATUSES = ['Not Started', 'In Progress', 'In Review', 'Blocked', 'On Hold', 'Complete', 'Cancelled'];
+  const SCLASS = {
+    'Not Started': 's-ns', 'In Progress': 's-ip', 'In Review': 's-rv',
+    'Blocked': 's-bl', 'On Hold': 's-hd', 'Complete': 's-cp', 'Cancelled': 's-cx'
+  };
+  const SORDER = {
+    'Not Started': 0, 'In Progress': 1, 'In Review': 2, 'Blocked': 3,
+    'On Hold': 4, 'Complete': 5, 'Cancelled': 6
+  };
   const PORDER = { High: 0, Medium: 1, Low: 2 };
 
   let tasks = [];
@@ -26,8 +33,36 @@
     if (!s) return '—';
     return parseDate(s).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   }
+  function fmtTime(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+      ', ' + d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  }
   function esc(s) {
     return String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+
+  // Ensure every task has the fields we rely on (id, numeric pct, comments array).
+  function normalize(list) {
+    return (Array.isArray(list) ? list : []).map((t) => ({
+      ...t,
+      id: t.id || uid(),
+      pct: Number(t.pct) || 0,
+      comments: Array.isArray(t.comments) ? t.comments : []
+    }));
+  }
+
+  // The name shown on this person's comments. Asked once, then remembered per browser.
+  function getAuthor() {
+    let a = '';
+    try { a = localStorage.getItem(AUTHOR_KEY) || ''; } catch (e) { /* ignore */ }
+    if (!a) {
+      a = (window.prompt('Your name (shown on your comments):') || '').trim();
+      if (a) { try { localStorage.setItem(AUTHOR_KEY, a); } catch (e) { /* ignore */ } }
+      else a = 'Anonymous';
+    }
+    return a;
   }
 
   /* ---------- persistence (shared via Netlify Blobs) ----------
@@ -38,8 +73,6 @@
   let saveTimer = null;
   let lastLocalWrite = 0;
 
-  // Write-through: update the local cache instantly, then push the whole
-  // board to the shared store (debounced so rapid edits send once).
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(tasks)); } catch (e) { /* private mode */ }
     lastLocalWrite = Date.now();
@@ -59,9 +92,6 @@
     return null;
   }
 
-  // null  = server reachable but board empty (never written)
-  // array = the shared board
-  // throws = server unreachable
   async function fetchShared() {
     const res = await fetch(API, { cache: 'no-store' });
     if (!res.ok) throw new Error('load failed');
@@ -72,12 +102,12 @@
     const t = today0();
     const iso = (n) => { const d = new Date(t); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
     return [
-      { id: uid(), task: 'Draft project brief',        owner: 'Alex',   status: 'Complete',    priority: 'High',   start: iso(-14), deadline: iso(-7), pct: 100, notes: 'Signed off by leadership' },
-      { id: uid(), task: 'Stakeholder kickoff meeting', owner: 'Sam',    status: 'Complete',    priority: 'Medium', start: iso(-6),  deadline: iso(-5), pct: 100, notes: '' },
-      { id: uid(), task: 'Design mockups',             owner: 'Jordan', status: 'In Progress', priority: 'High',   start: iso(-4),  deadline: iso(5),  pct: 60,  notes: 'Second draft in review' },
-      { id: uid(), task: 'Build prototype',            owner: 'Alex',   status: 'In Progress', priority: 'High',   start: iso(-2),  deadline: iso(12), pct: 30,  notes: '' },
-      { id: uid(), task: 'User testing round 1',       owner: 'Priya',  status: 'Not Started', priority: 'Medium', start: iso(13),  deadline: iso(20), pct: 0,   notes: 'Recruit 6 participants' },
-      { id: uid(), task: 'Finalize documentation',     owner: 'Sam',    status: 'Blocked',     priority: 'Low',    start: iso(2),   deadline: iso(9),  pct: 0,   notes: 'Waiting on final specs' }
+      { id: uid(), task: 'Draft project brief',        owner: 'Alex',   status: 'Complete',    priority: 'High',   start: iso(-14), deadline: iso(-7), pct: 100, notes: 'Signed off by leadership', comments: [] },
+      { id: uid(), task: 'Stakeholder kickoff meeting', owner: 'Sam',    status: 'Complete',    priority: 'Medium', start: iso(-6),  deadline: iso(-5), pct: 100, notes: '', comments: [] },
+      { id: uid(), task: 'Design mockups',             owner: 'Jordan', status: 'In Review',   priority: 'High',   start: iso(-4),  deadline: iso(5),  pct: 80,  notes: 'Second draft in review', comments: [] },
+      { id: uid(), task: 'Build prototype',            owner: 'Alex',   status: 'In Progress', priority: 'High',   start: iso(-2),  deadline: iso(12), pct: 30,  notes: '', comments: [] },
+      { id: uid(), task: 'User testing round 1',       owner: 'Priya',  status: 'Not Started', priority: 'Medium', start: iso(13),  deadline: iso(20), pct: 0,   notes: 'Recruit 6 participants', comments: [] },
+      { id: uid(), task: 'Finalize documentation',     owner: 'Sam',    status: 'Blocked',     priority: 'Low',    start: iso(2),   deadline: iso(9),  pct: 0,   notes: 'Waiting on final specs', comments: [] }
     ];
   }
 
@@ -102,7 +132,7 @@
 
     if (!rows.length) {
       tb.innerHTML =
-        '<tr><td colspan="9"><div class="empty"><b>No tasks here</b>' +
+        '<tr><td colspan="10"><div class="empty"><b>No tasks here</b>' +
         (tasks.length ? 'Try a different filter.' : 'Add your first task to get started.') +
         '</div></td></tr>';
       return;
@@ -112,6 +142,7 @@
       const dl = daysLeft(t);
       let dCls = 'd-ok', dTxt = '—';
       if (t.status === 'Complete')      { dCls = 'd-done'; dTxt = 'Done'; }
+      else if (t.status === 'Cancelled'){ dCls = 'd-ok';   dTxt = '—'; }
       else if (dl === null)             { dCls = 'd-ok';   dTxt = '—'; }
       else if (dl < 0)                  { dCls = 'd-over'; dTxt = Math.abs(dl) + 'd overdue'; }
       else if (dl <= 3)                 { dCls = 'd-soon'; dTxt = dl + 'd left'; }
@@ -119,10 +150,19 @@
 
       const opts = STATUSES.map((s) => `<option ${s === t.status ? 'selected' : ''}>${s}</option>`).join('');
 
+      const cs = t.comments || [];
+      const last = cs.length ? cs[cs.length - 1] : null;
+      const cmtCount = cs.length ? `<span class="cmt-count">${cs.length}</span>` : '';
+      const cmtPreview = last
+        ? `<span class="cmt-preview">${esc(last.text)}</span>`
+        : `<span class="cmt-preview empty">Add comment</span>`;
+
+      const nameCls = 'task-name' + (t.status === 'Cancelled' ? ' cx' : '');
+
       return `<tr>
         <td class="col-num mono">${i + 1}</td>
         <td>
-          <div class="task-name">${esc(t.task)}</div>
+          <div class="${nameCls}">${esc(t.task)}</div>
           ${t.notes ? `<div class="task-notes">${esc(t.notes)}</div>` : ''}
         </td>
         <td>${esc(t.owner) || '—'}</td>
@@ -133,6 +173,11 @@
         <td class="pct-cell">
           <div class="pct-track"><div class="pct-bar" style="width:${t.pct}%"></div></div>
           <div class="pct-label">${t.pct}%</div>
+        </td>
+        <td class="comments-cell">
+          <button class="cmt-open" data-act="comments" data-id="${t.id}" aria-label="Comments for ${esc(t.task)}">
+            ${cmtCount}${cmtPreview}
+          </button>
         </td>
         <td>
           <div class="row-actions">
@@ -146,15 +191,16 @@
 
   function renderBoard() {
     const count = (s) => tasks.filter((t) => t.status === s).length;
-    const overdue = tasks.filter((t) => t.status !== 'Complete' && t.deadline && daysLeft(t) < 0).length;
-    const overall = tasks.length
-      ? Math.round(tasks.reduce((a, t) => a + Number(t.pct || 0), 0) / tasks.length)
+    const overdue = tasks.filter((t) => t.status !== 'Complete' && t.status !== 'Cancelled' && t.deadline && daysLeft(t) < 0).length;
+    const counted = tasks.filter((t) => t.status !== 'Cancelled');
+    const overall = counted.length
+      ? Math.round(counted.reduce((a, t) => a + Number(t.pct || 0), 0) / counted.length)
       : 0;
 
     $('board').innerHTML = `
       <div class="stat"><div class="k">Total</div><div class="v">${tasks.length}</div></div>
-      <div class="stat"><div class="k"><span class="dot" style="background:var(--ns)"></span>Not started</div><div class="v">${count('Not Started')}</div></div>
       <div class="stat"><div class="k"><span class="dot" style="background:var(--ip)"></span>In progress</div><div class="v">${count('In Progress')}</div></div>
+      <div class="stat"><div class="k"><span class="dot" style="background:var(--rv)"></span>In review</div><div class="v">${count('In Review')}</div></div>
       <div class="stat"><div class="k"><span class="dot" style="background:var(--bl)"></span>Blocked</div><div class="v">${count('Blocked')}</div></div>
       <div class="stat"><div class="k"><span class="dot" style="background:var(--cp)"></span>Complete</div><div class="v">${count('Complete')} ${overdue ? `<small>${overdue} overdue</small>` : ''}</div></div>
       <div class="stat accent">
@@ -168,6 +214,25 @@
     $('filters').innerHTML = ['All', ...STATUSES]
       .map((f) => `<button class="chip ${f === activeFilter ? 'on' : ''}" data-act="filter" data-val="${f}">${f}</button>`)
       .join('');
+  }
+
+  function renderThread(t) {
+    const box = $('cmt-thread');
+    if (!box) return;
+    const cs = t.comments || [];
+    if (!cs.length) {
+      box.innerHTML = '<div class="cmt-empty">No comments yet. Start the conversation below.</div>';
+      return;
+    }
+    box.innerHTML = cs.map((c) => `
+      <div class="cmt">
+        <div class="cmt-meta">
+          <span class="cmt-author">${esc(c.author || 'Anonymous')}</span>
+          <span class="cmt-time">${fmtTime(c.ts)}</span>
+        </div>
+        <div class="cmt-text">${esc(c.text)}</div>
+      </div>`).join('');
+    box.scrollTop = box.scrollHeight;
   }
 
   /* ---------- actions ---------- */
@@ -194,7 +259,7 @@
 
     const t = id
       ? tasks.find((x) => x.id === id)
-      : { task: '', owner: '', status: 'Not Started', priority: 'Medium', start: '', deadline: '', pct: '', notes: '' };
+      : { task: '', owner: '', status: 'Not Started', priority: 'Medium', start: '', deadline: '', pct: '', notes: '', comments: [] };
 
     $('f-task').value = t.task || '';
     $('f-owner').value = t.owner || '';
@@ -204,6 +269,11 @@
     $('f-start').value = t.start || '';
     $('f-deadline').value = t.deadline || '';
     $('f-notes').value = t.notes || '';
+
+    // Comments only make sense on a task that already exists.
+    const isEdit = !!id;
+    $('cmt-section').hidden = !isEdit;
+    if (isEdit) { renderThread(t); $('cmt-input').value = ''; }
 
     $('overlay').hidden = false;
     $('f-task').focus();
@@ -240,9 +310,24 @@
     };
 
     if (editingId) Object.assign(tasks.find((x) => x.id === editingId), data);
-    else tasks.push({ id: uid(), ...data });
+    else tasks.push({ id: uid(), ...data, comments: [] });
 
     save(); closeModal(); render();
+  }
+
+  function addComment() {
+    if (!editingId) return;
+    const t = tasks.find((x) => x.id === editingId);
+    const input = $('cmt-input');
+    const text = input.value.trim();
+    if (!t || !text) return;
+    if (!Array.isArray(t.comments)) t.comments = [];
+    t.comments.push({ id: uid(), author: getAuthor(), text, ts: Date.now() });
+    input.value = '';
+    save();
+    renderThread(t);
+    render();       // refresh the table preview + count
+    input.focus();
   }
 
   /* ---------- import / export ---------- */
@@ -256,11 +341,14 @@
   function exportJSON() { download('project-tracker.json', JSON.stringify(tasks, null, 2), 'application/json'); }
 
   function exportCSV() {
-    const head = ['Task', 'Owner', 'Status', 'Priority', 'Start', 'Deadline', '% Complete', 'Notes'];
-    const rows = tasks.map((t) =>
-      [t.task, t.owner, t.status, t.priority, t.start, t.deadline, t.pct, t.notes]
-        .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')
-    );
+    const head = ['Task', 'Owner', 'Status', 'Priority', 'Start', 'Deadline', '% Complete', 'Notes', 'Comments'];
+    const rows = tasks.map((t) => {
+      const comments = (t.comments || [])
+        .map((c) => `${c.author || 'Anonymous'} (${fmtTime(c.ts)}): ${c.text}`)
+        .join('  |  ');
+      return [t.task, t.owner, t.status, t.priority, t.start, t.deadline, t.pct, t.notes, comments]
+        .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',');
+    });
     download('project-tracker.csv', [head.join(','), ...rows].join('\n'), 'text/csv');
   }
 
@@ -272,7 +360,7 @@
       try {
         const data = JSON.parse(reader.result);
         if (!Array.isArray(data)) throw new Error('bad shape');
-        tasks = data.map((t) => ({ id: t.id || uid(), pct: Number(t.pct) || 0, ...t }));
+        tasks = normalize(data);
         save(); render();
       } catch (err) {
         alert('That file isn’t a saved tracker. Pick a project-tracker.json file.');
@@ -287,11 +375,17 @@
   $('btn-cancel').addEventListener('click', closeModal);
   $('btn-close').addEventListener('click', closeModal);
   $('btn-savetask').addEventListener('click', saveTask);
+  $('btn-addcmt').addEventListener('click', addComment);
   $('btn-csv').addEventListener('click', exportCSV);
   $('btn-save').addEventListener('click', exportJSON);
   $('btn-load').addEventListener('click', () => $('importer').click());
   $('importer').addEventListener('change', importJSON);
   $('sort').addEventListener('change', render);
+
+  // Ctrl/Cmd+Enter posts a comment
+  $('cmt-input').addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); addComment(); }
+  });
 
   $('overlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('overlay').hidden) closeModal(); });
@@ -301,9 +395,10 @@
     const el = e.target.closest('[data-act]');
     if (!el) return;
     const act = el.dataset.act;
-    if (act === 'edit')   openModal(el.dataset.id);
-    if (act === 'del')    delTask(el.dataset.id);
-    if (act === 'filter') { activeFilter = el.dataset.val; render(); }
+    if (act === 'edit')     openModal(el.dataset.id);
+    if (act === 'comments') openModal(el.dataset.id);
+    if (act === 'del')      delTask(el.dataset.id);
+    if (act === 'filter')   { activeFilter = el.dataset.val; render(); }
   });
 
   document.addEventListener('change', (e) => {
@@ -323,7 +418,7 @@
       try {
         const shared = await fetchShared();
         if (Array.isArray(shared) && JSON.stringify(shared) !== JSON.stringify(tasks)) {
-          tasks = shared;
+          tasks = normalize(shared);
           try { localStorage.setItem(KEY, JSON.stringify(tasks)); } catch (e) { /* ignore */ }
           render();
         }
@@ -341,21 +436,18 @@
     }
 
     if (Array.isArray(shared)) {
-      // A shared board already exists — everyone sees this.
-      tasks = shared;
+      tasks = normalize(shared);
     } else if (shared === null) {
-      // Server reachable but empty (first run after switching to shared).
       const cache = loadCache();
       if (cache && cache.length) {
-        tasks = cache;                       // migrate this browser's board up...
-        save();                              // ...so teammates can finally see it
+        tasks = normalize(cache);
+        save();
       } else {
-        tasks = seed();
+        tasks = normalize(seed());
         save();
       }
     } else {
-      // Server unreachable — fall back to the local cache so the app still works.
-      tasks = loadCache() || seed();
+      tasks = normalize(loadCache() || seed());
     }
 
     render();
