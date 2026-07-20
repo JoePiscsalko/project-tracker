@@ -1,0 +1,7 @@
+# Netlify configuration for the reLink Project Tracker.
+# The site is static (no build step); this just tells Netlify where the
+# shared-store serverless function lives so the board can sync across people.
+
+[build]
+  publish = "."
+  functions = "netlify/functions"

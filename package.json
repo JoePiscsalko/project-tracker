@@ -1,0 +1,10 @@
+{
+  "name": "relink-project-tracker",
+  "version": "1.0.0",
+  "description": "Shared project tracker for reLink Medical (static site + Netlify Blobs).",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
