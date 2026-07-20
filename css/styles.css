@@ -76,7 +76,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
   font-size:10.5px;font-weight:700;
   text-transform:uppercase;letter-spacing:.16em;color:var(--brand-teal);
 }
-.brand-logo{height:36px;width:auto;display:block}
+.brand-logo{height:40px;width:auto;display:block}
 .brand-fallback{display:none;align-items:center;gap:9px}
 
 .title-block h1{
